@@ -1,0 +1,16 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: add nopass to sudoers
+      copy: 
+        src: cloud_user.sudo
+        dest: /etc/sudoers.d/90-cloud-init-users
+        mode: '0440'
+        owner: root
+        group: root
+        validate: /usr/sbin/visudo -csf %s
+    - name: remove bad sudo file
+      file:
+        path: /etc/sudoers.d/cloud_user.sudo
+        state: absent

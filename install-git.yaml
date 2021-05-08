@@ -1,0 +1,11 @@
+---
+- name: Install cvs
+  gather_facts: no
+  hosts: webserver3
+  become: yes
+  
+  tasks:
+    - name: Install git
+      yum:
+        name: git
+        state: latest
