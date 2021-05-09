@@ -1,0 +1,70 @@
+---
+- name: Install Hashicorp vault
+  gather_facts: No
+  hosts: vault
+  become: yes
+
+  tasks:
+    - name: create /opt/vault directory
+      ansible.builtin.file:
+        path: /opt/vault
+        state: directory
+        mode: '0755'
+    - name: create /etc/vault directory
+      ansible.builtin.file:
+        path: /etc/vault
+        state: directory
+        mode: '0755'
+    - name: create /opt/vault-data directory
+      ansible.builtin.file:
+        path: /opt/vault-data
+        state: directory
+        mode: '0755'
+    - name: create /logs/vault directory
+      ansible.builtin.file:
+        path: /logs/vault
+        state: directory
+        mode: '0755'
+    - name: Install unzip
+      yum:
+        name: unzip
+        state: latest
+    - name: download hashicorp vault
+      get_url:
+        url: https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip
+        dest: /opt/vault
+        mode: '0755'
+      become: yes
+    - name: unzip vault file
+      ansible.builtin.unarchive:
+        src: /opt/vault/vault_1.7.1_linux_amd64.zip
+        dest: /opt/vault
+        remote_src: yes
+      become: yes
+    - name: copy file to bin
+      ansible.builtin.copy:
+        src: /opt/vault/vault
+        dest: /usr/bin/vault
+        mode: '0755'
+        remote_src: yes
+    - name: download config.json
+      get_url:
+        url: https://raw.githubusercontent.com/vipin-k/HashiCorp-Vault/master/config.json
+        dest: /etc/vault/
+        mode: '0755'
+    - name: download hashicorp vault
+      get_url:
+        url: https://raw.githubusercontent.com/vipin-k/HashiCorp-Vault/master/vault.service
+        dest: /etc/systemd/system
+        mode: '0755'
+    - name: update ipaddress and port in the config file
+      ansible.builtin.shell:
+        cmd: private_ip=$(hostname -i | awk '{print $NF }') sed -i -e 's/192.168.3.115/$private_ip/g' -e 's/8200/8020/g' /etc/vault/config.json
+    - name: force systemd deamon reload
+      ansible.builtin.systemd:
+        daemon_reload: yes
+    - name: enable vault systemd service
+      ansible.builtin.systemd:
+        name: vault
+        state: started
+        enabled: yes
