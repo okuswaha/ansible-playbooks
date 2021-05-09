@@ -59,7 +59,7 @@
         mode: '0755'
     - name: update ipaddress and port in the config file
       ansible.builtin.shell:
-        cmd: private_ip=$(hostname -i | awk '{print $NF }') && sed -i -e 's/192.168.3.115/$private_ip/g' -e 's/8200/8020/g' /etc/vault/config.json
+        cmd: private_ip=$(hostname -i | awk '{print $NF }') && sed -i -e "s/192.168.3.115/$private_ip/g" -e 's/8200/8020/g'/etc/vault/config.json
     - name: force systemd deamon reload
       ansible.builtin.systemd:
         daemon_reload: yes
